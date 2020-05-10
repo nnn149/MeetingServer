@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.nicenan.meeting.mapper.UserMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.nicenan.meeting.model.User">
+        <id column="id" property="id"/>
+        <result column="nickname" property="nickname"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="email" property="email"/>
+        <result column="grade" property="grade"/>
+        <result column="openId" property="openId"/>
+        <result column="status" property="status"/>
+        <result column="remark" property="remark"/>
+        <result column="insertTime" property="insertTime"/>
+        <result column="updateTime" property="updateTime"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, nickname, username, password, email, grade, openId, status, remark, insertTime, updateTime
+    </sql>
+    <sql id="Self_Column_List">
+        user.id, user.nickname, user.username, user.password, user.email, user.grade, user.openId, user.status, user.remark,user.insertTime, user.updateTime
+    </sql>
+    <select id="pageListVo" resultType="cn.nicenan.meeting.model.vo.UserVo">
+        select
+        id, nickname, username, email, grade, openId, status, remark, insertTime, updateTime
+        from user
+        <where>
+            <if test="userListDto.nickname!=null and userListDto.nickname!=''">
+                user.nickname like "%"#{userListDto.nickname}"%"
+            </if>
+            <if test="userListDto.username!=null and userListDto.username!=''">
+                and user.username like "%"#{userListDto.username}"%"
+            </if>
+            <if test="userListDto.email!=null and userListDto.email!=''">
+                and user.email like "%"#{userListDto.email}"%"
+            </if>
+            and id!=1
+        </where>
+    </select>
+
+</mapper>

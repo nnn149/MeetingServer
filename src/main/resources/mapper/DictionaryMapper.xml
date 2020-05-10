@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.nicenan.meeting.mapper.DictionaryMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.nicenan.meeting.model.Dictionary">
+        <id column="id" property="id"/>
+        <result column="parentId" property="parentId"/>
+        <result column="title" property="title"/>
+        <result column="titleE" property="titleE"/>
+        <result column="value" property="value"/>
+        <result column="type" property="type"/>
+        <result column="sort" property="sort"/>
+        <result column="status" property="status"/>
+        <result column="image" property="image"/>
+        <result column="url" property="url"/>
+        <result column="cssClass" property="cssClass"/>
+        <result column="remark" property="remark"/>
+        <result column="insertTime" property="insertTime"/>
+        <result column="updateTime" property="updateTime"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, parentId, title, titleE, value, type, sort, status, image, url, cssClass, remark, insertTime, updateTime
+    </sql>
+    <sql id="Self_Column_List">
+        dictionary.id, dictionary.parentId, dictionary.title, dictionary.titleE, dictionary.value, dictionary.type, dictionary.sort, dictionary.status, dictionary.image, dictionary.url, dictionary.cssClass, dictionary.remark, dictionary.insertTime, dictionary.updateTime
+    </sql>
+    <select id="pageListVo" resultType="cn.nicenan.meeting.model.vo.DictionaryVo">
+        select
+        <include refid="Self_Column_List"/>,
+        t.title as typeTitle,p.title as parentTitle,s.title as statusTitle
+        from dictionary
+        left join dictionaryType t ON dictionary.`type`=t.id
+        left join dictionary p ON dictionary.parentId=p.id
+        left join dictionary s ON dictionary.status=s.id
+        <where>
+            <if test="dictionaryListDto.title!=null and dictionaryListDto.title!=''">
+                dictionary.title like "%"#{dictionaryListDto.title}"%"
+            </if>
+            <if test="dictionaryListDto.startTime!=null and dictionaryListDto.startTime!=''">
+                and dictionary.updateTime &gt;= #{dictionaryListDto.startTime}
+            </if>
+            <if test="dictionaryListDto.endTime!=null and dictionaryListDto.endTime!=''">
+                and dictionary.updateTime &lt;= #{dictionaryListDto.endTime}
+            </if>
+            <if test="dictionaryListDto.type!=0">
+                and dictionary.type = #{dictionaryListDto.type}
+            </if>
+
+        </where>
+    </select>
+
+</mapper>
