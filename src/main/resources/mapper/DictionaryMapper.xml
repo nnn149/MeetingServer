@@ -36,8 +36,9 @@
         left join dictionary p ON dictionary.parentId=p.id
         left join dictionary s ON dictionary.status=s.id
         <where>
+            dictionary.type!=1
             <if test="dictionaryListDto.title!=null and dictionaryListDto.title!=''">
-                dictionary.title like "%"#{dictionaryListDto.title}"%"
+                and dictionary.title like "%"#{dictionaryListDto.title}"%"
             </if>
             <if test="dictionaryListDto.startTime!=null and dictionaryListDto.startTime!=''">
                 and dictionary.updateTime &gt;= #{dictionaryListDto.startTime}

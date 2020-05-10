@@ -55,6 +55,7 @@ public class DictionaryTypeController {
         if (StringUtils.isNotBlank(endTime)) {
             queryWrapper.le(DictionaryType::getUpdateTime, endTime);
         }
+        queryWrapper.ne(DictionaryType::getId, 1);
         IPage<DictionaryType> pageResult = dictionaryTypeService.page(pagePg, queryWrapper);
         PageBean<List<DictionaryType>> pageBean = new PageBean<>(pageResult.getTotal(), pageResult.getRecords());
         return new JsonResult<>(pageBean);
