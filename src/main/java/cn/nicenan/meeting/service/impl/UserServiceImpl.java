@@ -1,9 +1,5 @@
 package cn.nicenan.meeting.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import cn.nicenan.meeting.bean.PageBean;
 import cn.nicenan.meeting.mapper.UserMapper;
 import cn.nicenan.meeting.model.Role;
@@ -16,6 +12,10 @@ import cn.nicenan.meeting.service.RoleService;
 import cn.nicenan.meeting.service.UserRoleService;
 import cn.nicenan.meeting.service.UserService;
 import cn.nicenan.meeting.util.PageUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +54,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
+    public User getUserByEmail(String email) {
+        User user = baseMapper.selectOne(new QueryWrapper<User>().eq("email", email));
+        return user;
+    }
+
+    @Override
     public List<String> getRoleNameListById(Long userId) {
         List<UserRole> userRoles = userRoleService.list(new QueryWrapper<UserRole>().select("roleId").eq("userId", userId));
         List<Integer> ids = new ArrayList<>();
@@ -88,9 +94,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public boolean add(User user) {
-        authService.register(user);
-        userRoleService.save(new UserRole(user.getId(), 3));
+    public boolean add(User user) throws Exception {
+        if (getUserByUsername(user.getUsername()) != null) {
+            throw new Exception("用户名已存在");
+        }
+        if (getUserByEmail(user.getEmail()) != null) {
+            throw new Exception("邮箱已存在");
+        }
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        final String rawPassword = user.getPassword();
+        user.setPassword(encoder.encode(rawPassword));
+        this.save(user);
+        userRoleService.save(new UserRole(user.getId(), 2));
         return true;
     }
 

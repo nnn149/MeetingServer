@@ -22,7 +22,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -52,15 +51,11 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public JsonResult register(User user) {
-        final String username = user.getUsername();
-        if (userService.getUserByUsername(username) != null) {
-
-            return  new JsonResult(ResultCode.UNKNOWN_ERROR).setMessage("用户名已存在");
+        try {
+            userService.add(user);
+        } catch (Exception exception) {
+            return new JsonResult(ResultCode.UNKNOWN_ERROR).setMessage(exception.getMessage());
         }
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        final String rawPassword = user.getPassword();
-        user.setPassword(encoder.encode(rawPassword));
-        userService.save(user);
         return new JsonResult();
     }
 
@@ -71,7 +66,7 @@ public class AuthServiceImpl implements AuthService {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         final UserDetails userDetails = userDetailsService.loadUserByUsername(username);
         final String token = jwtTokenUtil.generateToken(userDetails);
-        Map<String,Object> map=new HashMap<>(1);
+        Map<String, Object> map = new HashMap<>(1);
         map.put("token", token);
         return new JsonResult<>(map);
     }

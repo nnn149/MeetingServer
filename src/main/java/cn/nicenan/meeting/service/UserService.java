@@ -18,11 +18,11 @@ import java.util.List;
  */
 public interface UserService extends IService<User> {
     User getUserByUsername(String username);
-
+    User getUserByEmail(String email);
     List<String> getRoleNameListById(Long userId);
 
     PageBean<List<UserVo>> getListByDto(UserListDto userListDto);
     int deleteByIds(List<Long> ids);
-    boolean add(User user);
+    boolean add(User user) throws Exception;
     boolean updateOne(User user);
 }

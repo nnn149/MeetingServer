@@ -11,6 +11,7 @@ package cn.nicenan.meeting.controller;
 
 import cn.nicenan.meeting.bean.JsonResult;
 import cn.nicenan.meeting.bean.LoginInfo;
+import cn.nicenan.meeting.bean.RegisterInfo;
 import cn.nicenan.meeting.model.User;
 import cn.nicenan.meeting.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,8 +42,9 @@ public class JwtAuthController {
 
     // 注册
     @RequestMapping(value = "/authentication/register", method = RequestMethod.POST)
-    public JsonResult register(@RequestBody User addedUser) {
+    public JsonResult register(@RequestBody RegisterInfo registerInfo) {
 
+        User addedUser = new User(registerInfo.getNickname(), registerInfo.getUsername(), registerInfo.getPass(), registerInfo.getEmail());
         return authService.register(addedUser);
     }
 

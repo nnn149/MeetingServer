@@ -146,4 +146,14 @@ public class User implements Serializable {
         ", updateTime=" + updateTime +
         "}";
     }
+
+    public User() {
+    }
+
+    public User(String nickname, String username, String password, String email) {
+        this.nickname = nickname;
+        this.username = username;
+        this.password = password;
+        this.email = email;
+    }
 }

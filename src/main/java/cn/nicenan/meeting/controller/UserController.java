@@ -56,11 +56,12 @@ public class UserController {
     @PreAuthorize("hasAnyAuthority('admin')")
     @PostMapping(value = "/add")
     public JsonResult addUser(@RequestBody User user) throws JsonProcessingException {
-        if (userService.add(user)) {
-            return new JsonResult();
-        } else {
-            return new JsonResult(ResultCode.BAD_REQUEST);
+        try {
+            userService.add(user);
+        } catch (Exception exception) {
+            return new JsonResult(ResultCode.UNKNOWN_ERROR).setMessage(exception.getMessage());
         }
+        return new JsonResult();
     }
 
     @PreAuthorize("hasAnyAuthority('admin')")
