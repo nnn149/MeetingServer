@@ -104,6 +104,8 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST, "/authentication/**").permitAll()
                 //下载接口放行
                 .antMatchers(HttpMethod.GET, "/download/**").permitAll()
+                //websocket放行
+                .antMatchers(HttpMethod.GET, "/ws/**").permitAll()
                 //让Spring security 放行所有preflight request（cors 预检请求）
                 .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
                 //其他接口全部接受验证
