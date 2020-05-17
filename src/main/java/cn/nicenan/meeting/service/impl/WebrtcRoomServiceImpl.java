@@ -13,11 +13,13 @@ import cn.nicenan.meeting.bean.WebrtcMessage;
 import cn.nicenan.meeting.service.WebrtcRoomService;
 import cn.nicenan.meeting.util.JwtTokenUtil;
 import cn.nicenan.meeting.websocket.WebrtcWS;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -129,6 +131,32 @@ public class WebrtcRoomServiceImpl implements WebrtcRoomService {
             }
         }
         return stringBuffer.toString();
+    }
+
+    @Override
+    public boolean forwardToEveryoneInRoom(String roomId, WebrtcMessage message, String excludeUserId) {
+        Set<WebrtcWS> users = rooms.get(roomId);
+        String msg = "";
+        try {
+            msg = new ObjectMapper().writeValueAsString(message);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return false;
+        }
+        for (WebrtcWS u : users) {
+            if (!"".equals(excludeUserId)) {
+                if (u.getUserId().equals(excludeUserId)) {
+                    break;
+                }
+            }
+            try {
+                u.getSession().getBasicRemote().sendText(msg);
+            } catch (IOException e) {
+                e.printStackTrace();
+                break;
+            }
+        }
+        return true;
     }
 
 }

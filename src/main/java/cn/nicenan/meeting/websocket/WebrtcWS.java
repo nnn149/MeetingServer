@@ -82,6 +82,8 @@ public class WebrtcWS {
                 case WebrtcMessage.TYPE_COMMAND_ROOM_ENTER:
                     webrtcRoomService.enterRoom(message.getRoomId(), message.getRoomPw(), message.getToken(), this);
                     break;
+                case WebrtcMessage.TYPE_COMMAND_CHAT:
+                    webrtcRoomService.forwardToEveryoneInRoom(roomId, message, "");
                 default:
                     break;
             }

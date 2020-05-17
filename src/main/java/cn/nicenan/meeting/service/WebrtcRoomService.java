@@ -9,6 +9,7 @@
  */
 package cn.nicenan.meeting.service;
 
+import cn.nicenan.meeting.bean.WebrtcMessage;
 import cn.nicenan.meeting.websocket.WebrtcWS;
 import org.springframework.stereotype.Service;
 
@@ -66,9 +67,21 @@ public interface WebrtcRoomService {
 
     /**
      * 获取房间内所有人
+     *
      * @param roomId 房间id
      * @return 所有人
      */
     String getRoomUsers(String roomId);
+
+    /**
+     * 转发消息到房间所有人
+     *
+     * @param roomId        房间Id
+     * @param message       要转发的消息
+     * @param excludeUserId 不转发的userId
+     * @return 是否成功
+     */
+    boolean forwardToEveryoneInRoom(String roomId, WebrtcMessage message, String excludeUserId);
+
 
 }

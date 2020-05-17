@@ -21,7 +21,7 @@ public class WebrtcMessage {
     public static final String TYPE_COMMAND_ROOM_ENTER = "enterRoom";
     public static final String TYPE_COMMAND_ROOM_CREATE = "createRoom";
     public static final String TYPE_COMMAND_ROOM_LIST = "roomList";
-    public static final String TYPE_COMMAND_DIALOGUE = "dialogue";
+    public static final String TYPE_COMMAND_PM = "pm";
     public static final String TYPE_COMMAND_READY = "ready";
     public static final String TYPE_COMMAND_OFFER = "offer";
     public static final String TYPE_COMMAND_ANSWER = "answer";
@@ -30,6 +30,7 @@ public class WebrtcMessage {
 
     public static final String TYPE_COMMAND_ERROR = "error";
     public static final String TYPE_COMMAND_SUCCESS = "success";
+    public static final String TYPE_COMMAND_CHAT = "chat";
 
 
     private String command;
