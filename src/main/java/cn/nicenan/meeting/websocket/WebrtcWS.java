@@ -10,14 +10,16 @@
 package cn.nicenan.meeting.websocket;
 
 import cn.nicenan.meeting.bean.WebrtcMessage;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import cn.nicenan.meeting.service.WebrtcRoomService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -35,14 +37,18 @@ public class WebrtcWS {
     //在线总人数
     private static volatile AtomicInteger onlineCount = new AtomicInteger(0);
 
+    private static WebrtcRoomService webrtcRoomService;
+
+    @Autowired
+    public void setRoomService(WebrtcRoomService webrtcRoomService) {
+        WebrtcWS.webrtcRoomService = webrtcRoomService;
+    }
+
     //当前客户端的ip
     private String ip;
 
     //当前客户端的userID
     private String userId;
-
-    //当前客户端的roomNo
-    private String roomId;
 
     //与当前客户端的连接会话，需要通过它来给客户端发送数据
     private Session session;
@@ -55,8 +61,6 @@ public class WebrtcWS {
         this.session = session;
         ip = (String) session.getUserProperties().get("clientIp");
         logger.info("用户:" + ip + "连接到服务器,当前在线人数为" + onlineCount.incrementAndGet());
-
-
     }
 
     /**
@@ -68,9 +72,24 @@ public class WebrtcWS {
     public void onMessage(Session session, String stringMessage) {
         try {
             WebrtcMessage message = new ObjectMapper().readValue(stringMessage, WebrtcMessage.class);
-            logger.info("收到来自" + ip + "的信息:" + message);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            logger.info(message.toString());
+            switch (message.getCommand()) {
+                case WebrtcMessage.TYPE_COMMAND_ROOM_CREATE:
+                    webrtcRoomService.createRoom(message.getRoomId(), message.getRoomPw(), message.getToken(), this);
+                    break;
+                case WebrtcMessage.TYPE_COMMAND_ROOM_ENTER:
+                    webrtcRoomService.enterRoom(message.getRoomId(), message.getRoomPw(), message.getToken(), this);
+                    break;
+                default:
+                    break;
+            }
+            logger.info("收到来自" + userId + "的信息:" + message);
+        } catch (Exception ex) {
+            try {
+                session.getBasicRemote().sendText(new ObjectMapper().writeValueAsString(new WebrtcMessage(WebrtcMessage.TYPE_COMMAND_ERROR, userId, ex.getMessage())));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -80,7 +99,7 @@ public class WebrtcWS {
     @OnClose
     public void onClose(Session session) {
         //在线数减1
-        logger.info("用户:" + ip + "关闭连接，退出房间" + roomId + "当前在线人数为" + onlineCount.addAndGet(-1));
+        logger.info("用户:" + userId + "关闭连接,当前在线人数为" + onlineCount.addAndGet(-1));
     }
 
     /**
@@ -91,5 +110,28 @@ public class WebrtcWS {
 
     }
 
+    public String getIp() {
+        return ip;
+    }
 
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+
+    public Session getSession() {
+        return session;
+    }
+
+    public void setSession(Session session) {
+        this.session = session;
+    }
 }

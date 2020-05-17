@@ -24,8 +24,11 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 1.0.0
  */
 @RestController
-@RequestMapping("/websocket")
-public class WebSocketController {
+@RequestMapping("/WebrtcWs")
+public class WebrtcWsController {
+
+
+
     @Value("${server.port}")
     private Integer port;
 
