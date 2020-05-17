@@ -50,7 +50,16 @@ public class WebrtcRoomServiceImpl implements WebrtcRoomService {
 
     @Override
     public boolean kickUser(String roomId, WebrtcWS webrtcWS) {
-        return false;
+        Set<WebrtcWS> users = rooms.get(roomId);
+        if (users.size() > 0) {
+            users.remove(webrtcWS);
+            logger.info("用户:" + webrtcWS.getUserId() + "被移除,房间:" + roomId + "\n房间有: " + getRoomUsers(roomId));
+            if (users.size() == 0) {
+                rooms.remove(roomId);
+                logger.info("房间:" + roomId + "  无人了被移除");
+            }
+        }
+        return true;
     }
 
     @Override
@@ -66,9 +75,10 @@ public class WebrtcRoomServiceImpl implements WebrtcRoomService {
             throw new Exception("房间不存在");
         } else {
             if (roomsPw.get(roomId).equals(roomPw)) {
+                webrtcWS.setRoomId(roomId);
                 room.add(webrtcWS);
                 webrtcWS.getSession().getBasicRemote().sendText(new ObjectMapper().writeValueAsString(new WebrtcMessage(WebrtcMessage.TYPE_COMMAND_SUCCESS, userId, "enter")));
-                logger.info("用户:" + webrtcWS.getUserId() + "进入房间:" + roomId);
+                logger.info("用户:" + webrtcWS.getUserId() + "进入房间:" + roomId + "\n房间有: " + getRoomUsers(roomId));
                 return true;
             } else {
                 throw new Exception("密码错误");
@@ -88,13 +98,14 @@ public class WebrtcRoomServiceImpl implements WebrtcRoomService {
         if (room == null) {
             Set<WebrtcWS> synSet = Collections.synchronizedSet(new HashSet<>());
             //把自己创建人添加到房间
+            webrtcWS.setRoomId(roomId);
             synSet.add(webrtcWS);
             //把房间加到房间map
             rooms.put(roomId, synSet);
             //设置房间密码
             roomsPw.put(roomId, roomPw);
             webrtcWS.getSession().getBasicRemote().sendText(new ObjectMapper().writeValueAsString(new WebrtcMessage(WebrtcMessage.TYPE_COMMAND_SUCCESS, userId, "create")));
-            logger.info("用户:" + webrtcWS.getUserId() + "创建房间:" + roomId);
+            logger.info("用户:" + webrtcWS.getUserId() + "创建房间:" + roomId + "\n房间有: " + getRoomUsers(roomId));
             return true;
         } else {
             throw new Exception("房间已经存在");
@@ -107,4 +118,17 @@ public class WebrtcRoomServiceImpl implements WebrtcRoomService {
         room.remove(webrtcWS);
         return false;
     }
+
+    @Override
+    public String getRoomUsers(String roomId) {
+        Set<WebrtcWS> users = rooms.get(roomId);
+        StringBuffer stringBuffer = new StringBuffer();
+        if (users.size() > 0) {
+            for (WebrtcWS user : users) {
+                stringBuffer.append(user.getUserId() + "\n");
+            }
+        }
+        return stringBuffer.toString();
+    }
+
 }

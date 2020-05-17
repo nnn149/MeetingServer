@@ -64,5 +64,11 @@ public interface WebrtcRoomService {
      */
     boolean userLeave(String roomId, WebrtcWS webrtcWS);
 
+    /**
+     * 获取房间内所有人
+     * @param roomId 房间id
+     * @return 所有人
+     */
+    String getRoomUsers(String roomId);
 
 }

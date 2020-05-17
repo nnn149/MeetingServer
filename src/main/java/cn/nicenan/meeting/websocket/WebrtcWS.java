@@ -50,6 +50,8 @@ public class WebrtcWS {
     //当前客户端的userID
     private String userId;
 
+    private String roomId;
+
     //与当前客户端的连接会话，需要通过它来给客户端发送数据
     private Session session;
 
@@ -100,6 +102,10 @@ public class WebrtcWS {
     public void onClose(Session session) {
         //在线数减1
         logger.info("用户:" + userId + "关闭连接,当前在线人数为" + onlineCount.addAndGet(-1));
+        if (!"".equals(roomId) && !"0".equals(roomId)) {
+            webrtcRoomService.kickUser(roomId, this);
+        }
+
     }
 
     /**
@@ -133,5 +139,13 @@ public class WebrtcWS {
 
     public void setSession(Session session) {
         this.session = session;
+    }
+
+    public String getRoomId() {
+        return roomId;
+    }
+
+    public void setRoomId(String roomId) {
+        this.roomId = roomId;
     }
 }
