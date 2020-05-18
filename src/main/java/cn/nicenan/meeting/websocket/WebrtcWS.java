@@ -84,12 +84,23 @@ public class WebrtcWS {
                     break;
                 case WebrtcMessage.TYPE_COMMAND_CHAT:
                     webrtcRoomService.forwardToEveryoneInRoom(roomId, message, "");
+                    break;
+                case WebrtcMessage.TYPE_COMMAND_READY:
+                    webrtcRoomService.forwardToEveryoneInRoom(roomId, message, userId);
+                    break;
+                case WebrtcMessage.TYPE_COMMAND_OFFER:
+                    String toUserId = message.getUserId();
+                    // 把userId 设为offer发送方的id
+                    message.setUserId(userId);
+                    webrtcRoomService.forwardToOneInRoom(roomId, message, toUserId);
+                    break;
                 default:
                     break;
             }
             logger.info("收到来自" + userId + "的信息:" + message);
         } catch (Exception ex) {
             try {
+                ex.printStackTrace();
                 session.getBasicRemote().sendText(new ObjectMapper().writeValueAsString(new WebrtcMessage(WebrtcMessage.TYPE_COMMAND_ERROR, userId, ex.getMessage())));
             } catch (IOException e) {
                 e.printStackTrace();
@@ -104,8 +115,8 @@ public class WebrtcWS {
     public void onClose(Session session) {
         //在线数减1
         logger.info("用户:" + userId + "关闭连接,当前在线人数为" + onlineCount.addAndGet(-1));
-        if (!"".equals(roomId) && !"0".equals(roomId)) {
-            webrtcRoomService.kickUser(roomId, this);
+        if (!"".equals(roomId) && !"0".equals(roomId) && !"".equals(userId) && !"0".equals(userId)) {
+            webrtcRoomService.kickUser(roomId, userId);
         }
 
     }
@@ -115,7 +126,7 @@ public class WebrtcWS {
      */
     @OnError
     public void onError(Session session, Throwable error) {
-
+        logger.info("ws错误" + error.getMessage());
     }
 
     public String getIp() {

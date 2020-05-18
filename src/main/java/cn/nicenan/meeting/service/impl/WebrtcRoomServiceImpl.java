@@ -20,10 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -37,12 +34,12 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class WebrtcRoomServiceImpl implements WebrtcRoomService {
     private final static Logger logger = LoggerFactory.getLogger(WebrtcRoomServiceImpl.class);
-    private Map<String, Set<WebrtcWS>> rooms = new ConcurrentHashMap<>();
+    private Map<String, Map<String, WebrtcWS>> rooms = new ConcurrentHashMap<>();
     private Map<String, String> roomsPw = new ConcurrentHashMap<>();
 
     @Override
     public int countOfUserInRoom(String roomId) {
-        Set<WebrtcWS> room = rooms.get(roomId);
+        Map<String, WebrtcWS> room = rooms.get(roomId);
         if (room == null) {
             return 0;
         } else {
@@ -51,15 +48,19 @@ public class WebrtcRoomServiceImpl implements WebrtcRoomService {
     }
 
     @Override
-    public boolean kickUser(String roomId, WebrtcWS webrtcWS) {
-        Set<WebrtcWS> users = rooms.get(roomId);
-        if (users.size() > 0) {
-            users.remove(webrtcWS);
-            logger.info("用户:" + webrtcWS.getUserId() + "被移除,房间:" + roomId + "\n房间有: " + getRoomUsers(roomId));
-            if (users.size() == 0) {
-                rooms.remove(roomId);
-                logger.info("房间:" + roomId + "  无人了被移除");
+    public boolean kickUser(String roomId, String userId) {
+        try {
+            Map<String, WebrtcWS> room = rooms.get(roomId);
+            if (room.size() > 0) {
+                room.remove(userId);
+                logger.info("用户:" + userId + "被移除,房间:" + roomId + "\n房间内现有用户: " + getRoomUsers(roomId));
             }
+            if (room.size() == 0) {
+                rooms.remove(roomId);
+                logger.info("房间:" + roomId + " 没有人，房间被移除");
+            }
+        } catch (Exception exception) {
+            logger.info("无法提出用户" + exception.getMessage());
         }
         return true;
     }
@@ -72,14 +73,14 @@ public class WebrtcRoomServiceImpl implements WebrtcRoomService {
         } else {
             webrtcWS.setUserId(userId);
         }
-        Set<WebrtcWS> room = rooms.get(roomId);
+        Map<String, WebrtcWS> room = rooms.get(roomId);
         if (room == null) {
             throw new Exception("房间不存在");
         } else {
             if (roomsPw.get(roomId).equals(roomPw)) {
                 webrtcWS.setRoomId(roomId);
-                room.add(webrtcWS);
-                webrtcWS.getSession().getBasicRemote().sendText(new ObjectMapper().writeValueAsString(new WebrtcMessage(WebrtcMessage.TYPE_COMMAND_SUCCESS, userId, "enter")));
+                room.put(userId, webrtcWS);
+                webrtcWS.getSession().getBasicRemote().sendText(new ObjectMapper().writeValueAsString(new WebrtcMessage(WebrtcMessage.TYPE_COMMAND_SUCCESS, userId, roomId, "enter")));
                 logger.info("用户:" + webrtcWS.getUserId() + "进入房间:" + roomId + "\n房间有: " + getRoomUsers(roomId));
                 return true;
             } else {
@@ -96,17 +97,17 @@ public class WebrtcRoomServiceImpl implements WebrtcRoomService {
         } else {
             webrtcWS.setUserId(userId);
         }
-        Set<WebrtcWS> room = rooms.get(roomId);
+        Map<String, WebrtcWS> room = rooms.get(roomId);
         if (room == null) {
-            Set<WebrtcWS> synSet = Collections.synchronizedSet(new HashSet<>());
+            Map<String, WebrtcWS> newRoom = new ConcurrentHashMap<>();
             //把自己创建人添加到房间
             webrtcWS.setRoomId(roomId);
-            synSet.add(webrtcWS);
+            newRoom.put(userId, webrtcWS);
             //把房间加到房间map
-            rooms.put(roomId, synSet);
+            rooms.put(roomId, newRoom);
             //设置房间密码
             roomsPw.put(roomId, roomPw);
-            webrtcWS.getSession().getBasicRemote().sendText(new ObjectMapper().writeValueAsString(new WebrtcMessage(WebrtcMessage.TYPE_COMMAND_SUCCESS, userId, "create")));
+            webrtcWS.getSession().getBasicRemote().sendText(new ObjectMapper().writeValueAsString(new WebrtcMessage(WebrtcMessage.TYPE_COMMAND_SUCCESS, userId, roomId, "create")));
             logger.info("用户:" + webrtcWS.getUserId() + "创建房间:" + roomId + "\n房间有: " + getRoomUsers(roomId));
             return true;
         } else {
@@ -115,46 +116,53 @@ public class WebrtcRoomServiceImpl implements WebrtcRoomService {
     }
 
     @Override
-    public boolean userLeave(String roomId, WebrtcWS webrtcWS) {
-        Set<WebrtcWS> room = rooms.get("roomId");
-        room.remove(webrtcWS);
+    public boolean userLeave(String roomId, String userId) {
+        Map<String, WebrtcWS> room = rooms.get("roomId");
+        room.remove(userId);
         return false;
     }
 
     @Override
     public String getRoomUsers(String roomId) {
-        Set<WebrtcWS> users = rooms.get(roomId);
+        Map<String, WebrtcWS> room = rooms.get(roomId);
         StringBuffer stringBuffer = new StringBuffer();
-        if (users.size() > 0) {
-            for (WebrtcWS user : users) {
-                stringBuffer.append(user.getUserId() + "\n");
-            }
+        if (room.size() > 0) {
+            room.forEach((k, v) -> stringBuffer.append(k + "\n"));
         }
         return stringBuffer.toString();
     }
 
     @Override
     public boolean forwardToEveryoneInRoom(String roomId, WebrtcMessage message, String excludeUserId) {
-        Set<WebrtcWS> users = rooms.get(roomId);
-        String msg = "";
+        Map<String, WebrtcWS> room = rooms.get(roomId);
         try {
-            msg = new ObjectMapper().writeValueAsString(message);
+            final String msg = new ObjectMapper().writeValueAsString(message);
+            room.forEach((k, v) -> {
+                if (!k.equals(excludeUserId)) {
+                    try {
+                        v.getSession().getBasicRemote().sendText(msg);
+                        logger.info("转发:" + msg);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             return false;
         }
-        for (WebrtcWS u : users) {
-            if (!"".equals(excludeUserId)) {
-                if (u.getUserId().equals(excludeUserId)) {
-                    break;
-                }
-            }
-            try {
-                u.getSession().getBasicRemote().sendText(msg);
-            } catch (IOException e) {
-                e.printStackTrace();
-                break;
-            }
+        return true;
+    }
+
+    @Override
+    public boolean forwardToOneInRoom(String roomId, WebrtcMessage message, String userId) {
+        try {
+            String msg = new ObjectMapper().writeValueAsString(message);
+            rooms.get(roomId).get(userId).getSession().getBasicRemote().sendText(msg);
+            logger.info("转发到:" + userId + " ,内容: " + msg);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
         }
         return true;
     }

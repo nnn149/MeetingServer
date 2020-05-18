@@ -35,10 +35,10 @@ public interface WebrtcRoomService {
      * 踢出用户
      *
      * @param roomId   房间ID
-     * @param webrtcWS websocket连接
+     * @param userId userId
      * @return 成功true，失败false
      */
-    boolean kickUser(String roomId, WebrtcWS webrtcWS);
+    boolean kickUser(String roomId, String userId);
 
     /**
      * @param roomId   房间ID
@@ -60,10 +60,10 @@ public interface WebrtcRoomService {
 
     /**
      * @param roomId   房间ID
-     * @param webrtcWS websocket连接
+     * @param userId 用户ID
      * @return 成功true，失败false
      */
-    boolean userLeave(String roomId, WebrtcWS webrtcWS);
+    boolean userLeave(String roomId, String userId);
 
     /**
      * 获取房间内所有人
@@ -83,5 +83,13 @@ public interface WebrtcRoomService {
      */
     boolean forwardToEveryoneInRoom(String roomId, WebrtcMessage message, String excludeUserId);
 
-
+    /**
+     * 转发消息到指定人
+     *
+     * @param roomId        房间Id
+     * @param message       要转发的消息
+     * @param userId 转发的userId
+     * @return 是否成功
+     */
+    boolean forwardToOneInRoom(String roomId, WebrtcMessage message, String userId);
 }
