@@ -94,6 +94,12 @@ public class WebrtcWS {
                     message.setUserId(userId);
                     webrtcRoomService.forwardToOneInRoom(roomId, message, toUserId);
                     break;
+                case WebrtcMessage.TYPE_COMMAND_ANSWER:
+                     toUserId = message.getUserId();
+                    // 把userId 设为answer发送方的id
+                    message.setUserId(userId);
+                    webrtcRoomService.forwardToOneInRoom(roomId, message, toUserId);
+                    break;
                 default:
                     break;
             }
