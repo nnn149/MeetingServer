@@ -84,6 +84,10 @@ public class WebrtcWS {
                     break;
                 case WebrtcMessage.TYPE_COMMAND_CHAT:
                 case WebrtcMessage.TYPE_COMMAND_READY:
+                case WebrtcMessage.TYPE_COMMAND_BAN:
+                case WebrtcMessage.TYPE_COMMAND_KICK:
+                case WebrtcMessage.TYPE_COMMAND_VIEW:
+                case WebrtcMessage.TYPE_COMMAND_MUTED:
                     webrtcRoomService.forwardToEveryoneInRoom(roomId, message, "");
                     break;
                 case WebrtcMessage.TYPE_COMMAND_OFFER:
