@@ -33,7 +33,7 @@ public class WebrtcMessage {
     public static final String TYPE_COMMAND_VIEW = "VIEW";
     public static final String TYPE_COMMAND_BAN = "BAN";
     public static final String TYPE_COMMAND_KICK = "KICK";
-
+    public static final String TYPE_COMMAND_SIGN = "SIGN";
 
     private String command;
     private String userId;
