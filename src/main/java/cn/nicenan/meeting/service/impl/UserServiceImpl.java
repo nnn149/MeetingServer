@@ -79,7 +79,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         Page<UserVo> userVoPage = PageUtil.generatePage(UserVo.class, userListDto.getLimit());
         List<UserVo> userVos = baseMapper.pageListVo(userVoPage, userListDto);
         for (UserVo userVo : userVos) {
-            userVo.setRoleTitle("客服");
+            userVo.setRoleTitle("用户");
         }
         return new PageBean<>(userVoPage.getTotal(), userVos);
     }
