@@ -34,7 +34,7 @@ public class WebrtcWsController {
     @GetMapping("/url")
     public JsonResult getIpAddress() {
         //http用ws,https用wss,ws可以用ip访问，wss的话，用ip会报证书错误，需要用域名访问,
-        // return new JsonResult("ws:192.168.2.203:" + port + "/ws/webrtc");
-        return new JsonResult("wss:192.168.2.203:" + port + "/ws/webrtc");
+        // return new JsonResult("ws:192.168.2.108:" + port + "/ws/webrtc");
+        return new JsonResult("wss:192.168.2.108:" + port + "/ws/webrtc");
     }
 }
