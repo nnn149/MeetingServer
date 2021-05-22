@@ -77,10 +77,10 @@ public class WebrtcWS {
             logger.info(message.toString());
             switch (message.getCommand()) {
                 case WebrtcMessage.TYPE_COMMAND_ROOM_CREATE:
-                    webrtcRoomService.createRoom(message.getRoomId(), message.getRoomPw(), message.getToken(), this);
+                    webrtcRoomService.createRoom(message.getRoomId(), message.getRoomPw(), message.getToken(), this, message.getMessage());
                     break;
                 case WebrtcMessage.TYPE_COMMAND_ROOM_ENTER:
-                    webrtcRoomService.enterRoom(message.getRoomId(), message.getRoomPw(), message.getToken(), this);
+                    webrtcRoomService.enterRoom(message.getRoomId(), message.getRoomPw(), message.getToken(), this, message.getMessage());
                     break;
                 case WebrtcMessage.TYPE_COMMAND_CHAT:
                 case WebrtcMessage.TYPE_COMMAND_READY:
