@@ -47,7 +47,7 @@ public interface WebrtcRoomService {
      * @param roomPw   房间密码
      * @return 成功true，失败false
      */
-    boolean enterRoom(String roomId, String roomPw, String token, WebrtcWS webrtcWS) throws Exception;
+    boolean enterRoom(String roomId, String roomPw, String token, WebrtcWS webrtcWS,String nickname) throws Exception;
 
     /**
      * @param roomId   房间ID
@@ -56,7 +56,7 @@ public interface WebrtcRoomService {
      * @param roomPw   房间密码
      * @return 成功true，失败false
      */
-    boolean createRoom(String roomId, String roomPw, String token, WebrtcWS webrtcWS) throws Exception;
+    boolean createRoom(String roomId, String roomPw, String token, WebrtcWS webrtcWS,String nickname) throws Exception;
 
     /**
      * @param roomId   房间ID
